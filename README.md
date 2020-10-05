@@ -1,6 +1,33 @@
 # LiverAnnotation
 
 ## Reference Data
+`Halpern_Human_Ortho_sig_profiles.rds`
+Source: SupplementaryTable 3 https://www.nature.com/articles/nature21065
+Filters: 5% FDR, has human ortholog with HDNC gene symbol.
+Gene ids: Human gene symbols - duplicates from many-one relationships reduced to the gene with highest spatial patterning.
+
+`Halpern_Mouse_sig_profiles.rds`
+Source: Halpern at al. (2017) SupplementaryTable 3 https://www.nature.com/articles/nature21065
+Filters: 5% FDR
+Gene ids: Mouse MGI symbols
+
+`Zheng_immune_profiles.rds`
+Source: Zheng et al. (2017) https://support.10xgenomics.com/single-cell-gene-expression/datasets
+Filters: 500 genes/cell, 750 UMI/cell, sorted immune cells only.
+Processing: Normalized to 15,000 umi/cell, log2 transformed, pseudocount of 1.
+Specificity calculation: 
+0 if max mean expression < 0.5
+(max(mean expression) - min(mean expression))/max(0.01, min(mean expression))
+
+`Map2_scmap_minimal_reference.rds`
+Source: MacParland et al. (2018) https://www.nature.com/articles/s41467-018-06318-7
+Filters & Preprocessing: Same as original publication.
+
+`LiverMap1_Markers.txt1
+Source: MacParland et al. (2018) https://www.nature.com/articles/s41467-018-06318-7
+Definition:
+
+
 
 
 ## Package Prequisites
