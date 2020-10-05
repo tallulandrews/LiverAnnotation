@@ -28,4 +28,4 @@ rat2symbol <- rat2symbol[rat2symbol[,2] != "",]
 
 
 
-saveRDS(list(ensg2musg=ensg2musg, ensg2symbol=ensg2symbol, musg2symbol=musg2symbol, ensg2rat=ensg2rat, rat2symbol=rat2symbol, musg2rat=musg2rat), "my_ensembl_name_maps.rds")
+saveRDS(list(ensg2musg=ensg2musg, ensg2symbol=ensg2symbol, musg2symbol=musg2symbol, ensg2rat=ensg2rat, rat2symbol=rat2symbol, musg2rat=musg2rat), "Ensembl_name_maps.rds")

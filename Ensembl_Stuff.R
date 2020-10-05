@@ -1,4 +1,4 @@
-ensg_map_obj <- readRDS("/cluster/projects/macparland/TA/ExternalData/Ensembl/my_ensembl_name_maps.rds")
+ensg_map_obj <- readRDS("Ensembl_name_maps.rds")
 ensg_name_map <- ensg_map_obj[["ensg2symbol"]]
 ensg2musg <- ensg_map_obj[["ensg2musg"]]
 ensg2rat <- ensg_map_obj[["ensg2rat"]]
