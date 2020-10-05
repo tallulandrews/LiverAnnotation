@@ -23,9 +23,14 @@ Specificity calculation:
 Source: MacParland et al. (2018) https://www.nature.com/articles/s41467-018-06318-7
 Filters & Preprocessing: Same as original publication.
 
-`LiverMap1_Markers.txt1
+`LiverMap1_Markers.txt`
 Source: MacParland et al. (2018) https://www.nature.com/articles/s41467-018-06318-7
-Definition:
+Definition: 
+Cut-point chosen to maximized the difference between "on" and "off" cell-types
+This difference must be at least 0.3 difference in log mean expression and 0.1 difference in detection rate.
+Markers are classified by specific or general cell-type according to which clusters were "on" and "off" to maximize the difference.
+Markers unique to a cell-type had to be so both when considering mean expression and detection rate.
+
 
 
 
