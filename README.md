@@ -13,6 +13,7 @@ Gene ids: Mouse MGI symbols
 
 `Zheng_immune_profiles.rds`
 Source: Zheng et al. (2017) https://support.10xgenomics.com/single-cell-gene-expression/datasets
+Gene ids: Human Gene Symbols
 Filters: 500 genes/cell, 750 UMI/cell, sorted immune cells only.
 Processing: Normalized to 15,000 umi/cell, log2 transformed, pseudocount of 1.
 Specificity calculation: 
@@ -21,27 +22,37 @@ Specificity calculation:
 
 `Map2_scmap_minimal_reference.rds`
 Source: MacParland et al. (2018) https://www.nature.com/articles/s41467-018-06318-7
+Gene ids: Human Gene Symbols
 Filters & Preprocessing: Same as original publication.
 
 `LiverMap1_Markers.txt`
 Source: MacParland et al. (2018) https://www.nature.com/articles/s41467-018-06318-7
+Gene ids: Human Gene Symbols
 Definition: 
 Cut-point chosen to maximized the difference between "on" and "off" cell-types
 This difference must be at least 0.3 difference in log mean expression and 0.1 difference in detection rate.
 Markers are classified by specific or general cell-type according to which clusters were "on" and "off" to maximize the difference.
 Markers unique to a cell-type had to be so both when considering mean expression and detection rate.
 
+`markers.rds`
+"best_markers" : Manually curated markers from Map 1, spatial transcriptomics and literature.
+"immune_zheng" : top cell-type specific genes from Zheng et al.
+"immune_other" : a bunch of immune markers from the literature.
+
+Origially human, mapped to mouse and rat orthologs
 
 
 
-
-## Package Prequisites
-SingleCellExperiment, scmap, SCINA, Seurat, proxy, gplots, ggplot2, RColourBrewer
+## R Package Prequisites
+SingleCellExperiment, scmap, SCINA, Seurat(>=3.0), proxy, gplots, ggplot2, RColourBrewer, biomaRt (for getting latest name mapping only)
 
 ## Scripts
 `Liver_Colour_Scheme.R` : Matches standard cell types to a set of colours for consistency across plots.
+
 `Autoannotation.R` : Wrappers for scmap & SCINA & a custom (hypergeometric test) autoannotation tool.
+
 `Manual_annotation.R` : Script for making plots for manual annotation.
+
 `Generic_functions.R` : Simple functions for calculating mean expression in across clusters.
 
 

@@ -1,0 +1,50 @@
+class,Gene,Hepatocyte,Mac,NKT,B,LSEC,Chol,Erythroid
+hemoglobin,HBB,1,1,0,0,0,0,1
+hemoglobin,HBA1,1,1,0,0,0,0,1
+hemoglobin,HBA2,1,1,0,0,0,0,1
+Immune marker,PTPRC,0,1,1,1,0,0,0
+TCR,TRAC,0,0,1,0,0,0,0
+TCR,TRBC1,0,0,1,0,0,0,0
+TCR,TRBC2,0,0,1,0,0,0,0
+TCR,TRDC,0,0,1,0,0,0,0
+TCR,TRGC1,0,0,1,0,0,0,0
+TCR,TRGC2,0,0,1,0,0,0,0
+,HMOX1,1,1,0,0,1,1,0
+,ALB,1,0,0,0,1,1,0
+Drug metabolism,CYP2E1,1,1,0,0,1,1,0
+Drug metabolism,CYP3A7,1,1,0,0,1,1,0
+Drug metabolism,CYP2A7,1,1,0,0,1,1,0
+Drug metabolism,CYP2A6,1,1,0,0,1,1,0
+BCR,IGKC,0,0,0,1,0,0,0
+BCR,IGHE,0,0,0,1,0,0,0
+BCR,IGHM,0,0,0,1,0,0,0
+BCR,IGLC1,0,0,0,1,0,0,0
+BCR,IGLC3,0,0,0,1,0,0,0
+BCR,IGLC2,0,0,0,1,0,0,0
+,CD8A,0,1,1,1,0,0,0
+,CD3E,0,1,1,1,0,0,0
+Clotting Factor,F10,1,0,0,0,1,0,0
+Clotting Factor,F5,1,0,0,0,1,0,0
+Clotting Factor,F9,1,0,0,0,1,0,0
+Clotting Factor,F7,1,0,0,0,1,0,0
+Clotting Factor,FGB,1,0,0,0,1,0,0
+,HNF1A,1,0,0,0,0,1,0
+Bile,SLC10A1,1,0,0,0,0,1,0
+Bile,SLCO1B1,1,0,0,0,0,1,0
+Bile,SLCO1B3,1,0,0,0,0,1,0
+Bile,SLC22A1,1,0,0,0,0,1,0
+Bile,SLC22A7,1,0,0,0,0,1,0
+Bile,ABCB1,1,0,0,0,0,1,0
+Bile,ABCB11,1,0,0,0,0,1,0
+Bile,ABCB4,1,0,0,0,0,1,0
+Bile,ABCC3,1,0,0,0,0,1,0
+Bile,ABCC6,1,0,0,0,0,1,0
+hemoglobin degradation,HP,1,1,0,0,0,0,0
+,APOA1,1,0,0,0,1,1,0
+,APOB,1,0,0,0,1,1,0
+,ASGR1,1,0,0,0,1,1,0
+,MARCO,0,1,1,0,0,0,0
+,CD79B,0,0,0,1,0,0,0
+,NK67,0,0,1,0,0,0,0
+,TNF,0,1,1,1,0,0,0
+,GNLY,0,0,1,0,0,0,0

@@ -1,3 +1,11 @@
+# Loads pre-downloaded name mapping between ensembl and gene symbols
+# Loads pre-downloaded ortholog mapping between species pairs
+# Includes a bunch of functions to do the mapping across gene names and species
+
+# Key function is General_Map which links them all together to allow mapping from
+# either type of id: symbol or ensembl id, and across any of the three species: mouse, rat, human
+# it is found at the bottom of this script
+
 ensg_map_obj <- readRDS("Ensembl_name_maps.rds")
 ensg_name_map <- ensg_map_obj[["ensg2symbol"]]
 ensg2musg <- ensg_map_obj[["ensg2musg"]]
@@ -101,7 +109,29 @@ map_ensg_across_org <- function(genes, is.org=c("Hsap", "Mmus", "Rat"), out.org=
 	return(new);
 }
 
+M_symbol_2_H_symbol <- function(genes) {
+        tmp <- map_symbol_ensg(genes, is.org="Mmus", is.name="symbol")
+        tmp <- map_Hsap_Mmus(tmp, is.org="Mmus")
+        tmp <- map_symbol_ensg(tmp, is.org="Hsap", is.name="ensg")
+        return(tmp)
+}
+
+H_symbol_2_M_symbol <- function(genes) {
+        tmp <- map_symbol_ensg(genes, is.org="Hsap", is.name="symbol")
+        tmp <- map_Hsap_Mmus(tmp, is.org="Hsap")
+        tmp <- map_symbol_ensg(tmp, is.org="Mmus", is.name="ensg")
+        return(tmp)
+}
+
+# Maps from input gene ids to output gene ids.
+# Arguments:
+# genes = vector of input gene ids.
+# in.org = species of the input gene ids, choose Hsap = Human, Mmus = Mouse, Rat = Rat
+# in.name = id type of the input gene ids, choose symbol = gene symbol, ensg = ensembl ids
+# out.org = species to convert the gene ids to, choose Hsap = Human, Mmus = Mouse, Rat = Rat
+# out.name = id type to convert the gene ids to, choose symbol = gene symbol, ensg = ensembl ids
 General_Map <- function(genes, in.org=c("Hsap","Mmus","Rat"), in.name=c("symbol","ensg"), out.org=c("Hsap","Mmus", "Rat"), out.name=c("symbol","ensg")) {
+	genes <- as.character(genes);
 	if (in.org == out.org & in.name == out.name) {
 		# No change
 		return(genes)
@@ -125,18 +155,3 @@ General_Map <- function(genes, in.org=c("Hsap","Mmus","Rat"), in.name=c("symbol"
 		return(out)	
 	}
 }
-
-M_symbol_2_H_symbol <- function(genes) {
-        tmp <- map_symbol_ensg(genes, is.org="Mmus", is.name="symbol")
-        tmp <- map_Hsap_Mmus(tmp, is.org="Mmus")
-        tmp <- map_symbol_ensg(tmp, is.org="Hsap", is.name="ensg")
-        return(tmp)
-}
-
-H_symbol_2_M_symbol <- function(genes) {
-        tmp <- map_symbol_ensg(genes, is.org="Hsap", is.name="symbol")
-        tmp <- map_Hsap_Mmus(tmp, is.org="Hsap")
-        tmp <- map_symbol_ensg(tmp, is.org="Mmus", is.name="ensg")
-        return(tmp)
-}
-

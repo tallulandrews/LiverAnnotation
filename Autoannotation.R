@@ -2,13 +2,11 @@ require(SingleCellExperiment)
 require(scmap)
 require(SCINA)
 
-source("/cluster/home/tandrews/scripts/LiverMap2.0/My_R_Scripts.R")
-#auto_anno_dir <- "/home/gelder/MacParlandLabData/human/HumanLiver1.0/";
-auto_anno_dir <- "/cluster/projects/macparland/TA/AutoAnnotation"
+source("Generic_Functions.R")
 
-map1_ref <- readRDS(paste(auto_anno_dir,"scmap_reference.rds", sep="/"))
+map1_ref <- readRDS("Map1_scmap_minimal_reference.rds")
 
-map1_markers <- read.table(paste(auto_anno_dir, "my_marker_genes.txt", sep="/"), header=T, stringsAsFactors=FALSE)
+map1_markers <- read.table("LiverMap1_Markers.txt", header=T, stringsAsFactors=FALSE)
 
 types <- unique(map1_markers[,2])
 types <- types[types != "None"]
@@ -24,7 +22,6 @@ run_SCINA <- function(mat, marker_list=map1_markers_list) {
 	
 }
 
-#require(CellTypeProfiles)
 my_markers <- function(mat) {
         on_off <- matrix(0, ncol=ncol(mat), nrow=nrow(mat));
         my_split_max_gap <- function(x) {
@@ -51,17 +48,14 @@ run_scmap_seurat <- function(myseur, scmap_ref=map1_ref, return_sce=FALSE) {
 	mysce <- SingleCellExperiment(assays=list(counts=myseur@assays$RNA@counts, logcounts=myseur@assays$RNA@data), colData=myseur@meta.data)
 
 
-#	mysce <- as.SingleCellExperiment(myseur)
 	rowData(mysce)$feature_symbol=rownames(mysce);
 	mysce <- mysce[!grepl("^MT-", rownames(mysce)),] #remove MT genes.
 	mysce <- mysce[!grepl("^RPS-", rownames(mysce)),] #remove Ribo genes.
 	mysce <- mysce[!grepl("^RPL-", rownames(mysce)),] #remove Ribo genes.
 	
-#	for (i in seq(from=1, to=ncol(mysce), by=1000)) {
-#		tmp <- mysce[,seq(from=i, to=min(ncol(mysce), i+1000))]
 	# scmap_cluster
 	scmap_annotation <- scmapCluster( projection = mysce,
-		index_list = list(lm1 = metadata(map1_ref)$scmap_cluster_index), 
+		index_list = list(lm1 = map1_ref$scmap_cluster_index), 
 		threshold=0.1)
 	mysce$scmap_id <- as.vector(scmap_annotation$scmap_cluster_labs)
 	mysce$scmap_score <- as.vector(scmap_annotation$scmap_cluster_siml)
@@ -71,7 +65,7 @@ run_scmap_seurat <- function(myseur, scmap_ref=map1_ref, return_sce=FALSE) {
 	myseur@meta.data$scmap_cluster_score <- mysce$scmap_score
 
 	# scmap_cell
-	scmap_cell_res <- scmapCell(mysce, index_list=list(lm1=metadata(map1_ref)$scmap_cell_index));
+	scmap_cell_res <- scmapCell(mysce, index_list=list(lm1=map1_ref$scmap_cell_index));
 	getmode <- function(v) {
 	   uniqv <- unique(v)
 	   uniqv[which.max(tabulate(match(v, uniqv)))]
