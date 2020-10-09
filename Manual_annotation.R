@@ -47,6 +47,7 @@ Hepatocyte_Mouse_spatial_profiles <- readRDS("Halpern_Mouse_sig_profiles.rds");
 soupX <- read.table("SoupXGenesets_markers.csv", sep=",", header=T)
 markers <- readRDS("markers.rds")
 
+# Read input 
 obj <- readRDS(OPTS$input_rds)
 
 clusters <- obj@meta.data[,OPTS$clusters]
@@ -92,7 +93,7 @@ sync_profiles <- function(to_anno_means, ref_profiles, anno.org=c("Hsap", "Mmus"
 }
 
 
-if (anno.org == "Hsap") {
+if (OPTS$org == "Hsap") {
 	synced <- sync_profiles(scale_cluster_means[,Hepato_clusters], Hepatocyte_Human_spatial_profiles, anno.org=OPTS$org, ref.org="Hsap");
 } else {
 	synced <- sync_profiles(scale_cluster_means[,Hepato_clusters], Hepatocyte_Mouse_spatial_profiles, anno.org=OPTS$org, ref.org="Mmus");
@@ -200,7 +201,7 @@ if (OPTS$org != "Hsap") {
 	immune_phenotype2[immune_pheontype2 == ""] <- immune_pheontype[immune_pheontype2 == ""]
 	immune_pheontype <- immune_phenotype2
 }
-immune_phenotype <- immune_phenotype[immune_phenotype %in% rownames(immune_cells)]
+immune_phenotype <- unique(immune_phenotype[immune_phenotype %in% rownames(immune_cells)])
 
 #png(paste(OPTS$out_prefix, "SoupX_markers.png", sep="_"), width=8, height=8, units="in", res=300)
 #Seurat::DotPlot(obj, features=soupX[,2], group.by=OPTS$clusters)
