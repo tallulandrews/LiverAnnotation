@@ -38,6 +38,7 @@ require("scmap")
 require("SingleCellExperiment")
 require(proxy)
 require(gplots)
+require(ggplot2)
 require(RColorBrewer)
 source("Generic_functions.R")
 source("Ensembl_Stuff.R")
@@ -157,7 +158,7 @@ if (OPTS$org != "Hsap") {
 	immune_cells_sce <- immune_cells_sce[!duplicated(rowData(immune_cells_sce)$feature_symbol),]
 }
 
-cell_level <- scmapCluster(projection=immune_cells_sce, index_list = list(zheng=immune_scmap), threshold=0.1)
+cell_level <- scmapCluster(projection=immune_cells_sce, index_list = list(zheng=immune_scmap), threshold=0)
 
 cell_immune_lab <- cell_level$combined_labs;
 names(cell_immune_lab) <- colnames(immune_cells_sce)
@@ -183,17 +184,18 @@ if (OPTS$org == "Rat") {
 zheng_immune_markers=markers$immune_other[markers$immune_other[,name_col] %in% rownames(obj),]
 zheng_empiric_markers=markers$immune_zheng[markers$immune_zheng[,name_col] %in% rownames(obj),]
 
-png(paste(OPTS$out_prefix, "zheng_markers.png", sep="_"), width=8, height=8, units="in", res=300)
-Seurat::DotPlot(obj, features=zheng_immune_markers[,name_col], group.by=OPTS$clusters)
+pdf(paste(OPTS$out_prefix, "zheng_markers.pdf", sep="_"), width=20, height=8)
+Seurat::DotPlot(obj, features=zheng_immune_markers[,name_col], group.by=OPTS$clusters)+ theme(axis.text.x = element_text(angle = 90))
 dev.off()
-png(paste(OPTS$out_prefix, "zheng_emp_markers.png", sep="_"), width=8, height=8, units="in", res=300)
-Seurat::DotPlot(obj,features=zheng_empiric_markers[,name_col], group.by=OPTS$clusters)
+pdf(paste(OPTS$out_prefix, "zheng_emp_markers.pdf", sep="_"), width=20, height=8)
+Seurat::DotPlot(obj,features=zheng_empiric_markers[,name_col], group.by=OPTS$clusters)+ theme(axis.text.x = element_text(angle = 90))
 dev.off()
 
 
 # Other marker gene plots
 
 best_markers <- markers$best[,name_col];
+source("Colour_Scheme.R")
 immune_phenotype <- c(as.character(soupX[,2]),"TNF", "JCHAIN", "IGKV1-12", "IGKV4-1", "IGLV3-1", "IGLV6-57", "IGLL5", "IGLC7", rownames(obj)[grep("^CXC",rownames(obj), ignore.case=TRUE)], rownames(obj)[grep("^IL",rownames(obj), ignore.case=TRUE)], rownames(obj)[grep("^HLA",rownames(obj), ignore.case=TRUE)])
 
 if (OPTS$org != "Hsap") {
