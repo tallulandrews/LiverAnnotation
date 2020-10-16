@@ -155,3 +155,38 @@ General_Map <- function(genes, in.org=c("Hsap","Mmus","Rat"), in.name=c("symbol"
 		return(out)	
 	}
 }
+
+# Deals with problems of empty rownames and duplicated rownames.
+# For duplicated genes, selects the one with the greatest variabililty in data values.
+# For empty rownames keeps the old gene name.
+Rename_Rows <- function(data_matrix, new_names) {
+	old_names <- rownames(data_matrix);
+	keep_rows <- rep(TRUE, nrow(data_matrix));
+	# Empty
+	empty <- new_names == "";
+	new_names[empty] <- old_names[empty];
+	# Duplicated
+	dups <- unique(new_names[duplicated(new_names)]);
+	# Variability sparse-matrix compatible
+	dup_rows <- which(new_names %in% dups)
+	keep_rows[dup_rows] <- FALSE
+	rmeans <- Matrix::rowMeans(data_matrix[dup_rows,])
+	rsqmeans <- Matrix::rowMeans(data_matrix[dup_rows,]^2)
+	rvars <- rsqmeans-rmeans^2
+
+	names(rvars) <- new_names[dup_rows];
+	max_var <-  aggregate(rvars, by=list(names(rvars)), max)
+	
+	for (d in dups) {
+		rows <- dup_rows[names(rvars)==d & rvars==max_var[max_var[,1]==d,2]];
+		rows <- rows[1];
+		keep_rows[rows]=TRUE;
+	}
+	new_names <- new_names[keep_rows]
+	data_matrix <- data_matrix[keep_rows,]
+	rownames(data_matrix) <- new_names;
+
+	return(list(kept_rows=keep_rows, data_matrix=data_matrix));
+}
+
+
