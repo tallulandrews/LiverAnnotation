@@ -40,13 +40,14 @@ require(proxy)
 require(gplots)
 require(ggplot2)
 require(RColorBrewer)
-source("Generic_functions.R")
-source("Ensembl_Stuff.R")
-Immune_Profiles <- readRDS("Zheng_immune_profiles.rds");
-Hepatocyte_Human_spatial_profiles <- readRDS("Halpern_Human_Ortho_sig_profiles.rds");
-Hepatocyte_Mouse_spatial_profiles <- readRDS("Halpern_Mouse_sig_profiles.rds");
-soupX <- read.table("SoupXGenesets_markers.csv", sep=",", header=T)
-markers <- readRDS("markers.rds")
+source("~/scripts/LiverMap2.0/Colour_Scheme.R")
+source("~/Annotation_Package/Generic_functions.R")
+source("~/R-Scripts/Ensembl_Stuff.R")
+Immune_Profiles <- readRDS("~/Annotation_Package/Zheng_immune_profiles.rds");
+Hepatocyte_Human_spatial_profiles <- readRDS("~/Annotation_Package/Halpern_Human_Ortho_sig_profiles.rds");
+Hepatocyte_Mouse_spatial_profiles <- readRDS("~/Annotation_Package/Halpern_Mouse_sig_profiles.rds");
+soupX <- read.table("~/Annotation_Package/SoupXGenesets_markers.csv", sep=",", header=T)
+markers <- readRDS("~/Annotation_Package/markers.rds")
 
 # Read input 
 obj <- readRDS(OPTS$input_rds)
@@ -56,22 +57,37 @@ clusters <- obj@meta.data[,OPTS$clusters]
 # For subsetting & specific analyses.
 autoanno <- obj@meta.data[,OPTS$autoannotation]
 
-coarse_anno <- as.character(autoanno)
+tab <- table(clusters, autoanno); tab <- tab/rowSums(tab);
+auto_anno <- colnames(tab)[apply(tab, 1, function(x){which(x==max(x))})]
+
+coarse_anno <- as.character(auto_anno)
 coarse_anno[grep("Hep", coarse_anno)] <- "Hep"
 coarse_anno[grep("NK*cell", coarse_anno)] <- "Lympho"
 coarse_anno[grep("T*cell", coarse_anno)] <- "Lympho"
 coarse_anno[grep("B*cell", coarse_anno)] <- "Lympho"
 
-tab <- table(clusters, coarse_anno); tab <- tab/rowSums(tab);
-Lympho_clusters <- rownames(tab)[tab[,"Lympho"] > 0.5]
-Hepato_clusters <- rownames(tab)[tab[,"Hep"] > 0.5]
+Lympho_clusters <- which(coarse_anno == "Lympho")
+Hepato_clusters <- which(coarse_anno == "Hep")
+ambiguous <- which(coarse_anno == "ambiguous")
+Lympho_clusters <- c(ambiguous, Lympho_clusters)
+Hepato_clusters <- c(ambiguous, Hepato_clusters)
 
 gene_cluster_means <- group_rowmeans(obj@assays[[1]]@data, clusters)
 scale_cluster_means <- group_rowmeans(obj@assays[[1]]@scale.data, clusters)
 
+# Make mouse-gene named expression matrix;
+mouse_genes1 <- General_Map(rownames(scale_cluster_means), in.org="Rat", out.org="Mmus", in.name="symbol", out.name="symbol")
+mouse_genes2 <- General_Map(rownames(scale_cluster_means), in.org="Hsap", out.org="Mmus", in.name="symbol", out.name="symbol")
+mouse_genes <- rownames(scale_cluster_means);
+mouse_genes[!(mouse_genes1 == "")] <- mouse_genes1[!(mouse_genes1 == "")]
+mouse_genes[!(mouse_genes2 == "")] <- mouse_genes2[!(mouse_genes2 == "")]
+
+tmp <- Rename_Rows(scale_cluster_means, mouse_genes)
+scale_cluster_means_mouse <- tmp$data_matrix;
+
 # Hepatocyte Annotation
 sync_profiles <- function(to_anno_means, ref_profiles, anno.org=c("Hsap", "Mmus", "Rat"), ref.org=c("Hsap", "Mmus", "Rat")) {
-	if (anno.org[1] != ref.org[1]) {
+	if (FALSE) {
 		remap <- rownames(to_anno_means);
 		remapped <- General_Map(remap, in.org=anno.org, in.name="symbol", out.org=ref.org, out.name="symbol")
 		keep <- remapped != "" & !duplicated(remapped);	
@@ -97,7 +113,7 @@ sync_profiles <- function(to_anno_means, ref_profiles, anno.org=c("Hsap", "Mmus"
 if (OPTS$org == "Hsap") {
 	synced <- sync_profiles(scale_cluster_means[,Hepato_clusters], Hepatocyte_Human_spatial_profiles, anno.org=OPTS$org, ref.org="Hsap");
 } else {
-	synced <- sync_profiles(scale_cluster_means[,Hepato_clusters], Hepatocyte_Mouse_spatial_profiles, anno.org=OPTS$org, ref.org="Mmus");
+	synced <- sync_profiles(scale_cluster_means_mouse[,Hepato_clusters], Hepatocyte_Mouse_spatial_profiles, anno.org=OPTS$org, ref.org="Mmus");
 }
 	
 cluster_profiles <- synced$anno
@@ -154,8 +170,8 @@ immune_cells_sce <- immune_cells_sce[match(rownames(immune_cells@assays[[1]]@sca
 assays(immune_cells_sce)[["logcounts"]] <- immune_cells@assays[[1]]@scale.data;
 rowData(immune_cells_sce)$feature_symbol <- rownames(immune_cells@assays[[1]]@scale.data);
 if (OPTS$org != "Hsap") {
-	rowData(immune_cells_sce)$feature_symbol <- General_Map(rownames(immune_cells@assays[[1]]@scale.data), anno.org=OPTS$org, out.org="Hsap", in.name="symbol", out.name="symbol");
-	immune_cells_sce <- immune_cells_sce[!duplicated(rowData(immune_cells_sce)$feature_symbol),]
+#	rowData(immune_cells_sce)$feature_symbol <- General_Map(rownames(immune_cells@assays[[1]]@scale.data), anno.org=OPTS$org, out.org="Hsap", in.name="symbol", out.name="symbol");
+#	immune_cells_sce <- immune_cells_sce[!duplicated(rowData(immune_cells_sce)$feature_symbol),]
 }
 
 cell_level <- scmapCluster(projection=immune_cells_sce, index_list = list(zheng=immune_scmap), threshold=0)
@@ -174,12 +190,12 @@ dev.off()
 
 #Immune marker gene plots.
 name_col <- "Hgene"
-if (OPTS$org == "Mmus") {
-	name_col <- "Mgene"
-}
-if (OPTS$org == "Rat") {
-	name_col <- "Rgene"
-}
+#if (OPTS$org == "Mmus") {
+#	name_col <- "Mgene"
+#}
+#if (OPTS$org == "Rat") {
+#	name_col <- "Rgene"
+#}
 
 zheng_immune_markers=markers$immune_other[markers$immune_other[,name_col] %in% rownames(obj),]
 zheng_empiric_markers=markers$immune_zheng[markers$immune_zheng[,name_col] %in% rownames(obj),]
@@ -194,26 +210,44 @@ dev.off()
 
 # Other marker gene plots
 
-best_markers <- markers$best[,name_col];
-source("Colour_Scheme.R")
-immune_phenotype <- c(as.character(soupX[,2]),"TNF", "JCHAIN", "IGKV1-12", "IGKV4-1", "IGLV3-1", "IGLV6-57", "IGLL5", "IGLC7", rownames(obj)[grep("^CXC",rownames(obj), ignore.case=TRUE)], rownames(obj)[grep("^IL",rownames(obj), ignore.case=TRUE)], rownames(obj)[grep("^HLA",rownames(obj), ignore.case=TRUE)])
+
+
+cytokines <- c(rownames(obj)[grep("^CXC",rownames(obj), ignore.case=TRUE)],  rownames(obj)[grep("^IL",rownames(obj), ignore.case=TRUE)])
+TCR_BCR <- c("TRAC", "TRBC1", "TRBC2", "TRDC", "TRGC1", "TRGC2", "IGKC", "IGHE", "IGHM", "IGLC1", "IGLC3", "IGLC2", "JCHAIN", "IGKV1-12", "IGKV4-1", "IGLV3-1", "IGLV6-57", "IGLL5", "IGLC7")
+Other_Surface_Signal <- c("TNF", rownames(obj)[grep("^HLA",rownames(obj), ignore.case=TRUE)], "PTPRC", "CD8A", "CD3E", "MARCO", "CD79B", "NK67", "GNLY")
+
+#immune_phenotype <- c(as.character(soupX[,2]),"TNF", "JCHAIN", "IGKV1-12", "IGKV4-1", "IGLV3-1", "IGLV6-57", "IGLL5", "IGLC7", rownames(obj)[grep("^CXC",rownames(obj), ignore.case=TRUE)], rownames(obj)[grep("^IL",rownames(obj), ignore.case=TRUE)], rownames(obj)[grep("^HLA",rownames(obj), ignore.case=TRUE)])
 
 if (OPTS$org != "Hsap") {
-	immune_phenotype2 <- General_Map(immune_phenotype, in.org="Hsap", out.org=OPTS$org, in.name="symbol", out.name="symbol");
-	immune_phenotype2[immune_pheontype2 == ""] <- immune_pheontype[immune_pheontype2 == ""]
-	immune_pheontype <- immune_phenotype2
+#	immune_phenotype2 <- General_Map(immune_phenotype, in.org="Hsap", out.org=OPTS$org, in.name="symbol", out.name="symbol");
+#	immune_phenotype2[immune_pheontype2 == ""] <- immune_pheontype[immune_pheontype2 == ""]
+#	immune_pheontype <- immune_phenotype2
 }
-immune_phenotype <- unique(immune_phenotype[immune_phenotype %in% rownames(immune_cells)])
 
-#png(paste(OPTS$out_prefix, "SoupX_markers.png", sep="_"), width=8, height=8, units="in", res=300)
-#Seurat::DotPlot(obj, features=soupX[,2], group.by=OPTS$clusters)
-#dev.off()
-png(paste(OPTS$out_prefix, "Immune_pheno.png", sep="_"), width=8, height=8, units="in", res=300)
-Seurat::DotPlot(immune_cells, features=immune_phenotype, group.by=OPTS$clusters)
+pdf(paste(OPTS$out_prefix, "Immune_pheno_cytokines.pdf", sep="_"), width=20, height=8)
+Seurat::DotPlot(immune_cells, features=cytokines, group.by=OPTS$clusters)+ theme(axis.text.x = element_text(angle = 90))
 dev.off()
+
+pdf(paste(OPTS$out_prefix, "Immune_pheno_TCR_BCR.pdf", sep="_"), width=15, height=8)
+Seurat::DotPlot(immune_cells, features=TCR_BCR, group.by=OPTS$clusters)+ theme(axis.text.x = element_text(angle = 90))
+dev.off()
+
+pdf(paste(OPTS$out_prefix, "Immune_pheno_Other.pdf", sep="_"), width=15, height=8)
+Seurat::DotPlot(immune_cells, features=Other_Surface_Signal, group.by=OPTS$clusters)+ theme(axis.text.x = element_text(angle = 90))
+dev.off()
+
+#Heatmap
+markers$best <- markers$best[markers$best[,name_col] %in% rownames(scale_cluster_means),]
+row_colours <- Cell_type_colours[match(map_cell_types(markers$best[,1]), Cell_type_colours[,1]),2]
+
+heatdata <- scale_cluster_means[match(markers$best[,name_col], rownames(scale_cluster_means)),]
 
 png(paste(OPTS$out_prefix, "best_markers.png", sep="_"), width=8, height=8, units="in", res=300)
-Seurat::DotPlot(obj, features=best_markers, group.by=OPTS$clusters)
+heatmap.2(heatdata, RowSideColors=row_colours, scale="row", trace="none")
 dev.off()
 
+out <- as.matrix(table(clusters, obj$Phase))
+out <- cbind(out, auto_anno)
+
+write.table(out, row.names=T, col.names=T, file=paste(OPTS$out_prefix, "CCPhase.txt", sep="_"), sep=",", quote=FALSE)
 
